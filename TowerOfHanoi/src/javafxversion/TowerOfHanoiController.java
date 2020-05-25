@@ -2,6 +2,7 @@ package javafxversion;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Stack;
 
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
@@ -26,11 +27,11 @@ public class TowerOfHanoiController {
 	private Disk diskSelected;
 	private int towerSelected;
 	private double w, h;
-	private boolean draggable = false;
+	private boolean dragging = false;
 
 	private int numberOfDisks = 2;
 
-	private int moves = 0;
+	private int moves;
 
 	public TowerOfHanoiController(Canvas canvas) {
 		this.canvas = canvas;
@@ -43,81 +44,87 @@ public class TowerOfHanoiController {
 		canvas.setOnMousePressed(event -> {
 			Point2D point = new Point2D(event.getX(), event.getY());
 
-			int n = currentTower(point);
+			int tower = currentTower(point);
 
-			if (!pegs[n].getDisks().empty()) {
-				diskSelected = pegs[n].getDisks().peek();
+			Stack<Disk> disks = pegs[tower].getDisks();
+
+			if (!disks.empty()) {
+				diskSelected = disks.peek();
 
 				if (diskSelected.getRectangle().contains(point)) {
-					pegs[n].getDisks().pop();
+					disks.pop();
 
 					w = point.getX() - diskSelected.getX();
 					h = point.getY() - diskSelected.getY();
 
-					draggable = true;
+					towerSelected = tower;
+					dragging = true;
 				} else {
 					diskSelected = null;
-					draggable = false;
+					dragging = false;
 				}
 			}
 		});
 
 		canvas.setOnMouseDragged(event -> {
-			double cx = event.getX();
-			double cy = event.getY();
-
-			if (diskSelected != null && draggable == true) {
-				diskSelected.setLocation(cx - w, cy - h);
+			if (diskSelected != null && dragging == true) {
+				diskSelected.setLocation(event.getX() - w, event.getY() - h);
 				draw();
 			}
 		});
 
 		canvas.setOnMouseReleased(event -> {
-			if (diskSelected != null && draggable == true) {
-				moves++;
+			if (diskSelected != null && dragging == true) {
+				int currentTower = currentTower(new Point2D(event.getX(), event.getY()));
 
-				int tower = currentTower(new Point2D(event.getX(), event.getY()));
+				if (towerSelected == currentTower || currentTower == -1) {
+					currentTower = towerSelected;
+					moves--;
+				}
 
 				double x, y;
 
-				if (!pegs[tower].getDisks().empty()) {
-					if (pegs[tower].getDisks().peek().getWidth() > diskSelected.getWidth()) {
-						y = pegs[tower].getDisks().peek().getY() - 20;
-					} else {
-						moves--;
+				Stack<Disk> disks = pegs[currentTower].getDisks();
 
-						Alert alert = new Alert(AlertType.ERROR);
-						alert.setHeaderText(null);
-						alert.setTitle("Tower of Hanoi");
-						alert.setContentText("Wrong Move!");
-						alert.show();
-
-						tower = towerSelected;
-
-						if (!pegs[tower].getDisks().empty()) {
-							y = pegs[tower].getDisks().peek().getY() - 20;
-						} else {
-							y = canvas.getHeight() - 40;
-						}
-					}
+				if (disks.empty()) {
+					y = canvas.getHeight() - 42;
+				} else if (diskSelected.getWidth() < disks.peek().getWidth()) {
+					y = disks.peek().getY() - 20;
 				} else {
-					y = canvas.getHeight() - 40;
+					moves--;
+
+					Alert alert = new Alert(AlertType.ERROR);
+					alert.setHeaderText(null);
+					alert.setTitle("Tower of Hanoi");
+					alert.setContentText("Wrong Move!");
+					alert.show();
+
+					currentTower = towerSelected;
+					disks = pegs[currentTower].getDisks();
+
+					if (!disks.empty()) {
+						y = disks.peek().getY() - 20;
+					} else {
+						y = canvas.getHeight() - 42;
+					}
 				}
 
-				x = (int) (canvas.getWidth() / 6 + (canvas.getWidth() / 3) * tower - diskSelected.getWidth() / 2);
+				x = (int) (canvas.getWidth() / 6 + (canvas.getWidth() / 3) * currentTower
+						- diskSelected.getWidth() / 2);
 
 				diskSelected.setLocation(x, y);
-				pegs[tower].getDisks().push(diskSelected);
+				disks.push(diskSelected);
 
+				moves++;
 				diskSelected = null;
-				draggable = false;
+				dragging = false;
 				draw();
 
-				if (pegs[2].getDisks().size() == numberOfDisks) {
-					Alert alert = new Alert(AlertType.CONFIRMATION);
+				if (currentTower == 2 && disks.size() == numberOfDisks) {
+					Alert alert = new Alert(AlertType.NONE);
 					alert.setTitle("Tower of Hanoi");
 
-					if (moves == Math.pow(2, moves) - 1) {
+					if (moves == Math.pow(2, numberOfDisks) - 1) {
 						alert.setHeaderText("Perfect!");
 						alert.setContentText("Moves: " + moves + " (optimal solution)");
 					} else {
@@ -128,7 +135,9 @@ public class TowerOfHanoiController {
 					ButtonType newGameButtonType = new ButtonType("New Game");
 					ButtonType resetGameButtonType = new ButtonType("Reset Game");
 					alert.getButtonTypes().setAll(newGameButtonType, resetGameButtonType);
+
 					Optional<ButtonType> result = alert.showAndWait();
+
 					if (result.get() == newGameButtonType) {
 						newGame();
 					} else {
@@ -190,8 +199,8 @@ public class TowerOfHanoiController {
 			double rectangleWidth = disks * 25 - 20 * i;
 			double rectangleHeight = 20;
 
-			Rectangle rectangle = new Rectangle(x - rectangleWidth / 2, 177.9 - i * 20, rectangleWidth,
-					rectangleHeight);
+			Rectangle rectangle = new Rectangle(x - rectangleWidth / 2, (canvas.getHeight() - 42) - i * 20,
+					rectangleWidth, rectangleHeight);
 
 			pegs[0].getDisks().push(new Disk(rectangle, colors[i]));
 		}
@@ -199,7 +208,7 @@ public class TowerOfHanoiController {
 		diskSelected = null;
 		w = 0.0;
 		h = 0.0;
-		draggable = false;
+		dragging = false;
 	}
 
 	public void draw() {
@@ -211,27 +220,27 @@ public class TowerOfHanoiController {
 		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
 		int xHolder = (int) (canvas.getWidth() / 6);
-		int y1Holder = (int) (canvas.getHeight() - 10 * 20);
+		int y1Holder = (int) (canvas.getHeight() - 220);
 		int y2Holder = (int) (canvas.getHeight());
 
 		gc.setLineCap(StrokeLineCap.ROUND);
-		gc.setStroke(Color.WHITE);
+		gc.setStroke(Color.LIGHTSTEELBLUE);
 		gc.setLineWidth(5);
 
 		gc.strokeLine(xHolder, y1Holder, xHolder, y2Holder);
 		gc.strokeLine(3 * xHolder, y1Holder, 3 * xHolder, y2Holder);
 		gc.strokeLine(5 * xHolder, y1Holder, 5 * xHolder, y2Holder);
+		
 		gc.setLineWidth(50);
-		LinearGradient lg = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
-				new Stop(0, Color.rgb(250, 236, 210)), new Stop(1, Color.rgb(231, 215, 179)));
-		gc.setStroke(lg);
+		gc.setStroke(new LinearGradient(canvas.getWidth(), 50, canvas.getWidth(), 50 + 100, false,
+				CycleMethod.REFLECT, new Stop(0, Color.rgb(250, 236, 210)), new Stop(1, Color.rgb(231, 215, 179))));
 		gc.strokeLine(0, y2Holder, canvas.getWidth(), y2Holder);
 
 		gc.setFill(Color.WHITE);
 		gc.setFont(new Font("Serif", 18));
-		gc.fillText("Moves: " + moves, 10, 20);
+		gc.fillText("Moves: " + moves, 15, 20);
 
-		if (draggable == true && diskSelected != null) {
+		if (dragging == true && diskSelected != null) {
 			diskSelected.draw(gc);
 		}
 

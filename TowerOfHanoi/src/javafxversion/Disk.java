@@ -5,6 +5,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 public class Disk {
+	public static final int HEIGHT = 20;
 	private Rectangle rectangle;
 
 	public Disk(Rectangle rectangle, Paint fill) {
