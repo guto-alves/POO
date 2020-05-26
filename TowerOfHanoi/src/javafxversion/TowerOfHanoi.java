@@ -30,10 +30,10 @@ public class TowerOfHanoi extends Application {
 
 		MenuItem newGameItem = new MenuItem("New Game");
 		newGameItem.setOnAction(event -> controller.newGame());
-		newGameItem.setAccelerator(KeyCombination.keyCombination("SHORTCUT+N"));
+		newGameItem.setAccelerator(KeyCombination.keyCombination("N"));
 
 		MenuItem resetGameItem = new MenuItem("Reset Game");
-		resetGameItem.setAccelerator(KeyCombination.keyCombination("SHORTCUT+R"));
+		resetGameItem.setAccelerator(KeyCombination.keyCombination("R"));
 		resetGameItem.setOnAction(event -> controller.resetGame());
 
 		MenuItem exitItem = new MenuItem("Exit");
