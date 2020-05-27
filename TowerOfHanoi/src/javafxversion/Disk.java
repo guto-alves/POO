@@ -1,11 +1,16 @@
 package javafxversion;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 public class Disk {
+	public static final Color COLORS[] = { Color.RED, Color.YELLOW, Color.BLUE, Color.GREEN, Color.ORANGE,
+			Color.LIGHTSKYBLUE, Color.AQUA, Color.PURPLE, Color.MEDIUMVIOLETRED };
+	
 	public static final int HEIGHT = 20;
+	
 	private Rectangle rectangle;
 
 	public Disk(Rectangle rectangle, Paint fill) {

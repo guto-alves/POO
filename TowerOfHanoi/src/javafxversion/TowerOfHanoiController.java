@@ -22,16 +22,15 @@ import javafx.scene.text.Font;
 public class TowerOfHanoiController {
 	private Canvas canvas;
 
+	private int numberOfDisks = 2;
+	private int moves;
+	
 	private Peg[] pegs = new Peg[3];
 
 	private Disk diskSelected;
 	private int towerSelected;
 	private double w, h;
-	private boolean dragging = false;
-
-	private int numberOfDisks = 2;
-
-	private int moves;
+	private boolean dragging;
 
 	public TowerOfHanoiController(Canvas canvas) {
 		this.canvas = canvas;
@@ -89,7 +88,7 @@ public class TowerOfHanoiController {
 				if (disks.empty()) {
 					y = canvas.getHeight() - 44.8;
 				} else if (diskSelected.getWidth() < disks.peek().getWidth()) {
-					y = disks.peek().getY() - 20;
+					y = disks.peek().getY() - Disk.HEIGHT;
 				} else {
 					moves--;
 
@@ -103,7 +102,7 @@ public class TowerOfHanoiController {
 					disks = pegs[currentTower].getDisks();
 
 					if (!disks.empty()) {
-						y = disks.peek().getY() - 20;
+						y = disks.peek().getY() - Disk.HEIGHT;
 					} else {
 						y = canvas.getHeight() - 44.8;
 					}
@@ -185,9 +184,6 @@ public class TowerOfHanoiController {
 	}
 
 	private void init(int disks) {
-		Color colors[] = { Color.RED, Color.YELLOW, Color.BLUE, Color.GREEN, Color.ORANGE, 
-				Color.LIGHTSKYBLUE, Color.AQUA, Color.PURPLE, Color.MEDIUMVIOLETRED};
-
 		pegs[0] = new Peg();
 		pegs[1] = new Peg();
 		pegs[2] = new Peg();
@@ -197,12 +193,11 @@ public class TowerOfHanoiController {
 			x = (x == 0) ? 109 : x;
 
 			double rectangleWidth = disks * 25 - 20 * i;
-			double rectangleHeight = 20;
 
-			Rectangle rectangle = new Rectangle(x - rectangleWidth / 2, (canvas.getHeight() - 44.8) - i * 20,
-					rectangleWidth, rectangleHeight);
+			Rectangle rectangle = new Rectangle(x - rectangleWidth / 2, (canvas.getHeight() - 44.8) - i * Disk.HEIGHT,
+					rectangleWidth, Disk.HEIGHT);
 
-			pegs[0].getDisks().push(new Disk(rectangle, colors[i]));
+			pegs[0].getDisks().push(new Disk(rectangle, Disk.COLORS[i]));
 		}
 
 		diskSelected = null;
@@ -225,15 +220,21 @@ public class TowerOfHanoiController {
 
 		gc.setLineCap(StrokeLineCap.ROUND);
 		gc.setLineWidth(7);
-		gc.setStroke(new LinearGradient(1, 0, 1, 1, true,
-				CycleMethod.REFLECT, new Stop(0, Color.rgb(222, 233, 236)), new Stop(1, Color.rgb(93, 162, 176))));
+		gc.setStroke(new LinearGradient(1, 0, 1, 1, true, CycleMethod.REFLECT, new Stop(0, Color.rgb(222, 233, 236)),
+				new Stop(1, Color.rgb(93, 162, 176))));
 
 		gc.strokeLine(xHolder, y1Holder, xHolder, y2Holder);
 		gc.strokeLine(3 * xHolder, y1Holder, 3 * xHolder, y2Holder);
 		gc.strokeLine(5 * xHolder, y1Holder, 5 * xHolder, y2Holder);
-		
+
+		gc.setFill(Color.WHITESMOKE);
+		gc.setFont(new Font(14));
+		gc.fillText("Source", xHolder - 21.5, y1Holder - 15);
+		gc.fillText("Temp", xHolder * 3 - 18, y1Holder - 15);
+		gc.fillText("Destination", xHolder * 5 - 35, y1Holder - 15);
+
 		gc.setLineWidth(50);
-		gc.setStroke(new LinearGradient(canvas.getWidth(), 50, canvas.getWidth(), 50 + 100, false,
+		gc.setStroke(new LinearGradient(canvas.getWidth(), 50, canvas.getWidth(), 50 + 100, false, 
 				CycleMethod.REFLECT, new Stop(0, Color.rgb(250, 236, 210)), new Stop(1, Color.rgb(231, 215, 179))));
 		gc.strokeLine(0, y2Holder, canvas.getWidth(), y2Holder);
 
@@ -252,7 +253,7 @@ public class TowerOfHanoiController {
 				}
 			}
 		}
-		
+
 		if (dragging == true && diskSelected != null) {
 			diskSelected.draw(gc);
 		}
