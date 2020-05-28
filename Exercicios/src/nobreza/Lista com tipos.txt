@@ -1,0 +1,13 @@
+CLASSES
+Bispo
+Conde
+Conselheiro
+Nobre
+Padre
+Principe
+Rainha
+Soldado
+INTERFACES
+Cavaleiro
+Diplomata
+Fiel
