@@ -16,6 +16,8 @@ public class EmployeeRepository {
 	private PreparedStatement updateEmployee;
 	private PreparedStatement deleteEmployee;
 	
+	private PreparedStatement selectEmployeeByEmailAndPassword;
+	
 	public EmployeeRepository() {
 		try {
 			Connection connection = Database.getConnection();
@@ -36,6 +38,10 @@ public class EmployeeRepository {
 			
 			selectAllEmployees = connection.prepareStatement(
 					"SELECT * FROM Employee");
+			
+			selectEmployeeByEmailAndPassword = connection.prepareStatement(
+					"SELECT * FROM  Employee " +
+					"WHERE Email = ? AND Password = ?");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -105,6 +111,34 @@ public class EmployeeRepository {
 			e.printStackTrace();
 		}
 		
-		return null ;
+		return null;
+	}
+	
+	public Employee getEmployee(String email, String password) {
+		try {
+			selectEmployeeByEmailAndPassword.setString(1, email);
+			selectEmployeeByEmailAndPassword.setString(2, password);
+			
+			ResultSet resultSet = selectEmployeeByEmailAndPassword
+					.executeQuery();
+			
+			Employee employee = null;
+			
+			while (resultSet.next()) {
+				employee = new Employee(
+						resultSet.getInt(1),
+						resultSet.getString(2), 
+						resultSet.getString(3), 
+						Role.valueOf(resultSet.getString(4)),
+						resultSet.getString(5),
+						resultSet.getString(6));
+			}
+			
+			return employee;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 }
