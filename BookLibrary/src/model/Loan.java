@@ -11,6 +11,16 @@ public class Loan {
 	private Employee employee;
 
 	public Loan(String loanDate, String returnDate, String dateReturned, 
+			Customer customer, Employee employee) {
+		this.loanDate = loanDate;
+		this.returnDate = returnDate;
+		this.dateReturned = dateReturned;
+		this.books = books;
+		this.customer = customer;
+		this.employee = employee;
+	}
+	
+	public Loan(String loanDate, String returnDate, String dateReturned, 
 			List<Book> books, Customer customer, Employee employee) {
 		this.loanDate = loanDate;
 		this.returnDate = returnDate;

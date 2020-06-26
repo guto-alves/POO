@@ -73,7 +73,7 @@ CREATE TABLE Employee (
     Name VARCHAR (80) NOT NULL,
     Phone INT,
     Role VARCHAR (30) NOT NULL,
-    Email VARCHAR (255) NOT NULL,
+    Email VARCHAR (255) NOT NULL UNIQUE,
     Password VARCHAR (8) NOT NULL
 );
 
@@ -93,6 +93,7 @@ CREATE TABLE Loan (
         REFERENCES Employee (ID)
 );
 
+
 SELECT 
    Customer.Name, Phone.Number
 FROM 
@@ -108,11 +109,14 @@ SELECT
 FROM 
     Customer INNER JOIN Address
         ON Customer.AddressID = Address.ID 
-WHERE Customer.Name = 'A';
+WHERE 
+    Customer.Name = 'A';
 
-SELECT *
+SELECT 
+    *
 FROM
     Loan;
+    
     
 SELECT 
     Customer.Name, Loan.LoanDate, Loan.ReturnDate, Book.Title
@@ -121,6 +125,7 @@ FROM
         ON Customer.RG = Loan.CustomerRG
     INNER JOIN Book
         ON Loan.BookISBN = Book.ISBN;
+        
         
 SELECT 
     Book.Title, Loan.LoanDate
@@ -131,14 +136,13 @@ WHERE
     Loan.CustomerRG = 5555;
 
 
--- Select all authors of the book
---SELECT 
---    Author.FirstName, Author.LastName
---FROM 
---    Book INNER JOIN Author_Book
---        ON Book.ISBN = Author_Book.BookISBN
---    INNER JOIN Author 
---        ON Author_Book.AuthorFirstName = Author.FirstName AND
---         Author_Book.AuthorLastName = Author.LastName
---WHERE
---    Book.ISBN = '555-555-55'
+SELECT 
+    Author.FirstName, Author.LastName
+FROM 
+    Book INNER JOIN Author_Book
+        ON Book.ISBN = Author_Book.BookISBN
+    INNER JOIN Author 
+        ON Author_Book.AuthorFirstName = Author.FirstName AND
+         Author_Book.AuthorLastName = Author.LastName
+WHERE
+    Book.ISBN = '555-555-55';

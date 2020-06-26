@@ -145,7 +145,7 @@ public class BookController {
 		
 		booksList = FXCollections.observableArrayList();
 		tableView.setItems(booksList);
-		FilteredList<Book> filteredData = new FilteredList<Book>(booksList);
+		FilteredList<Book> filteredData = new FilteredList<>(booksList);
 		filtroTextField.textProperty().addListener((observable, oldValue, newValue) -> {
 			filteredData.setPredicate(book  -> {
 				if (newValue == null || newValue.isBlank()) {

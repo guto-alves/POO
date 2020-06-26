@@ -16,14 +16,10 @@ public class CustomerRepository {
 	private PreparedStatement deleteCustomer;
 	private PreparedStatement selectAllCustomers;
 	
-	private PreparedStatement insertPhone;
-	private PreparedStatement deletePhone;
-	private PreparedStatement updatePhone;
-	private PreparedStatement selectAllPhones;
-	
 	public CustomerRepository() {
-		Connection connection = Database.getConnection();
 		try {
+			Connection connection = Database.getConnection();
+			
 			insertNewCustomer = connection.prepareStatement(
 					"INSERT INTO Customer " +
 					"(RG, CPF, Name, Email, AddressId) " +
@@ -43,47 +39,22 @@ public class CustomerRepository {
 					"Address.ID, Address.Street, Address.Number, Address.Complement, Address.PostalCode " + 
 					"FROM Customer INNER JOIN Address " +
 						"ON Customer.AddressID = Address.ID ");
-			
-			insertPhone = connection.prepareStatement(
-					"INSERT INTO Phone " + 
-					"(Number, CustomerRG) " +
-					"VALUES (?, ?)");
-			
-			deletePhone = connection.prepareStatement(
-					"DELETE FROM Phone " +
-					"WHERE CustomerRG = ?");
-			
-			selectAllPhones = connection.prepareStatement(
-					"SELECT Number " + 
-					"FROM Phone " + 
-					"WHERE CustomerRG = ?");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
 	}
 	
-	public int addCustomer(String rg, String cpf, String name, String email, 
-			List<String> phones) {
+	public int addCustomer(String rg, String cpf, String name,
+			String email, int addressId) {
 		try {
-			Database.getConnection().setAutoCommit(false);
-			
 			insertNewCustomer.setString(1, rg);
 			insertNewCustomer.setString(2, cpf);
 			insertNewCustomer.setString(3, name);
 			insertNewCustomer.setString(4, email);
-			insertNewCustomer.executeUpdate();
+			insertNewCustomer.setInt(5, addressId);
 			
-			for (String phone : phones) {
-				insertPhone.setString(1, phone);
-				insertPhone.setString(2, rg);
-				insertPhone.addBatch();
-			}
-			
-			insertPhone.executeBatch();
-			
-			Database.getConnection().commit();
-			return 1;
+			return insertNewCustomer.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -98,6 +69,7 @@ public class CustomerRepository {
 			updateCustomer.setString(2, cpf);
 			updateCustomer.setString(3, name);
 			updateCustomer.setString(4, email);
+			updateCustomer.setString(5, rg);
 			updateCustomer.setString(6, currentRg);
 			return updateCustomer.executeUpdate();
 		} catch (Exception e) {
@@ -129,13 +101,6 @@ public class CustomerRepository {
 						resultSet.getString(3),
 						resultSet.getString(4));
 				
-				List<String> phones = new ArrayList<>();
-				selectAllPhones.setString(1, customer.getRg());
-				ResultSet phonesResultSet = selectAllPhones.executeQuery();
-				while (phonesResultSet.next()) {
-					phones.add(phonesResultSet.getString(1));
-				}
-				
 				Address address = new Address(
 						resultSet.getInt(5), 
 						resultSet.getString(6), 
@@ -143,7 +108,6 @@ public class CustomerRepository {
 						resultSet.getString(8),
 						resultSet.getString(9));
 				
-				customer.setPhones(phones);
 				customer.setAddress(address);
 				customers.add(customer);
 			}
@@ -155,5 +119,5 @@ public class CustomerRepository {
 		
 		return null;
 	}
-
+	
 }

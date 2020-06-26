@@ -1,27 +1,26 @@
 package model;
 
-import java.util.List;
-
 public class Customer {
 	private String rg;
 	private String cpf;
 	private String name;
 	private String email;
-	private List<String> phones;
-	private Address address;
-
-	public Customer(String rg, String cpf, String name, String email) {
-		this(rg, cpf, name, email, null, null);
-	}
+	private String street;
+	private int number;
+	private String complement;
+	private String postalCode;
 
 	public Customer(String rg, String cpf, String name, String email, 
-			List<String> phones, Address address) {
+			String street, int number, String complement,
+			String postalCode) {
 		this.rg = rg;
 		this.cpf = cpf;
 		this.name = name;
 		this.email = email;
-		this.phones = phones;
-		this.address = address;
+		this.street = street;
+		this.number = number;
+		this.complement = complement;
+		this.postalCode = postalCode;
 	}
 
 	public String getRg() {
@@ -56,20 +55,45 @@ public class Customer {
 		this.email = email;
 	}
 
-	public List<String> getPhones() {
-		return phones;
+	public String getStreet() {
+		return street;
 	}
 
-	public void setPhones(List<String> phones) {
-		this.phones = phones;
+	public void setStreet(String street) {
+		this.street = street;
 	}
 
-	public Address getAddress() {
-		return address;
+	public int getNumber() {
+		return number;
 	}
 
-	public void setAddress(Address address) {
-		this.address = address;
+	public void setNumber(int number) {
+		this.number = number;
+	}
+
+	public String getComplement() {
+		return complement;
+	}
+
+	public void setComplement(String complement) {
+		this.complement = complement;
+	}
+
+	public String getPostalCode() {
+		return postalCode;
+	}
+
+	public void setPostalCode(String postalCode) {
+		this.postalCode = postalCode;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Customer)) {
+			return false;
+		}
+
+		return getRg().equals(((Customer) obj).getRg());
 	}
 
 }

@@ -130,7 +130,7 @@ public class EmployeeController {
 					return true;
 				}
 
-				return false;
+				return false; 
 			});
 		});
 		SortedList<Employee> sortedList = new SortedList<Employee>(filteredList);

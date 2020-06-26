@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.Book;
 import model.Loan;
 
 public class LoanRepository {
@@ -31,7 +30,9 @@ public class LoanRepository {
 					"WHERE LoanDate = ? AND CustomerRG = ? AND BookISBN = ?");
 			
 			selectAllLoans = connection.prepareStatement(
-					"SELECT * FROM Loan");
+					"SELECT LoanDate, ReturnDate, DateReturned, " + 
+					"LoanDate, ReturnDate, DateReturned, " +
+					"FROM Loan");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -87,7 +88,13 @@ public class LoanRepository {
 			List<Loan> loans = new ArrayList<>();
 			
 			while (resultSet.next()) {
-//				Loan loan = new Loan(result, returnDate, dateReturned, books, customer, employee);
+				Loan loan = new Loan(
+						resultSet.getString(1), 
+						resultSet.getString(2),
+						resultSet.getString(3), 
+						books,
+						customer,
+						employee);
 			}
 			
 			return loans;

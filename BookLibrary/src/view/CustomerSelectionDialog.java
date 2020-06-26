@@ -1,12 +1,15 @@
 package view;
 
+import java.util.Optional;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
+import javafx.scene.Node;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -24,17 +27,18 @@ public class CustomerSelectionDialog {
 		void onDialogClosed(Customer customer);
 	}
 
-	public void show() {
-		dialog.show();
-	}
-	
-	private Dialog<Customer> dialog;
+	private Dialog<ButtonType> dialog;
 	private CustomerRepository customerRepository = new CustomerRepository();
-	
-	public CustomerSelectionDialog(CustomerSelectionDialogListener listener) {
-		TextField filtedTextField = new TextField();
-		
-		TableView<Customer> tableView = new TableView<>();
+	private TableView<Customer> tableView = new TableView<>();
+
+	public CustomerSelectionDialog() {
+		dialog = new Dialog<>();
+		dialog.setTitle("Selecione um Cliente");
+		dialog.setResizable(true);
+
+		TextField filterTextField = new TextField();
+
+		tableView = new TableView<>();
 		TableColumn<Customer, String> nameColumn = new TableColumn<>("Nome");
 		nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
@@ -58,9 +62,9 @@ public class CustomerSelectionDialog {
 		});
 
 		ObservableList<Customer> customersList = FXCollections.observableArrayList();
-		tableView.setItems(customersList);
+		customersList.setAll(customerRepository.getAllCustomers());
 		FilteredList<Customer> filteredList = new FilteredList<>(customersList);
-		filtedTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+		filterTextField.textProperty().addListener((observable, oldValue, newValue) -> {
 			filteredList.setPredicate(customer -> {
 				if (newValue == null || newValue.isBlank()) {
 					return true;
@@ -68,11 +72,14 @@ public class CustomerSelectionDialog {
 
 				String text = newValue.toLowerCase();
 
-				if (customer.getRg().toLowerCase().contains(text)
-						|| customer.getCpf().toLowerCase().contains(text)
-						|| customer.getName().toLowerCase().contains(text)
-						|| customer.getEmail().toLowerCase().contains(text)) {
-					return true;
+				try {
+					if (customer.getRg().toLowerCase().contains(text) 
+							|| customer.getCpf().toLowerCase().contains(text)
+							|| customer.getName().toLowerCase().contains(text)
+							|| customer.getEmail().toLowerCase().contains(text)) {
+						return true;
+					}
+				} catch (NullPointerException ignored) {
 				}
 
 				return false;
@@ -81,28 +88,29 @@ public class CustomerSelectionDialog {
 		SortedList<Customer> sortedList = new SortedList<Customer>(filteredList);
 		sortedList.comparatorProperty().bind(tableView.comparatorProperty());
 		tableView.setItems(sortedList);
-		
-		customersList.addAll(customerRepository.getAllCustomers());
-		
-		Button selectButton = new Button("Selecionar");
-		selectButton.setOnAction(event -> {
-			listener.onDialogClosed(tableView.getSelectionModel().getSelectedItem());
-			dialog.hide();
-			dialog.close();
-		});
-		BorderPane.setAlignment(selectButton, Pos.CENTER_RIGHT);
 
-		FlowPane flowPane = new FlowPane(8, 8, new Label("Filtrar por"), filtedTextField);
+		ButtonType buttonType = new ButtonType("Selecionar", ButtonData.APPLY);
+		dialog.getDialogPane().getButtonTypes().addAll(buttonType, ButtonType.CANCEL);
+		Node node = dialog.getDialogPane().lookupButton(buttonType);
+		node.setDisable(true);
+		node.disableProperty().bind(tableView.getSelectionModel().selectedItemProperty().isNull());
+
+		FlowPane flowPane = new FlowPane(8, 8, new Label("Filtrar por"), filterTextField);
 		flowPane.setPadding(new Insets(16));
 		BorderPane borderPane = new BorderPane();
 		borderPane.setPadding(new Insets(8));
 		borderPane.setTop(flowPane);
 		borderPane.setCenter(tableView);
-		borderPane.setBottom(selectButton);
 
-		dialog = new Dialog<>();
-		dialog.setGraphic(borderPane);
-		dialog.setTitle("Selecione um Cliente");
+		dialog.getDialogPane().setContent(borderPane);
 	}
-	
+
+	public void show(CustomerSelectionDialogListener listener) {
+		Optional<ButtonType> result = dialog.showAndWait();
+		
+		if (result.isPresent() && result.get() != ButtonType.CANCEL) {
+			listener.onDialogClosed(tableView.getSelectionModel().getSelectedItem());
+		} 
+	}
+
 }

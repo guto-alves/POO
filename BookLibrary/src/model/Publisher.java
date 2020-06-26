@@ -43,4 +43,13 @@ public class Publisher {
 	public String toString() {
 		return name;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Publisher)) {
+			return false;
+		}
+		return getName().equals(((Publisher)obj).getName());
+	}
+	
 }

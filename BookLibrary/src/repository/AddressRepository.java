@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class AddressRepository {
 			insertAddress = connection.prepareStatement(
 					"INSERT INTO Address " +
 					"(Street, Number, Complement, PostalCode) " +
-					"VALUES (?, ?, ?, ?)");
+					"VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			
 			updateAddress = connection.prepareStatement(
 					"UPDATE Address " +
@@ -48,7 +49,14 @@ public class AddressRepository {
 			insertAddress.setString(2, number);
 			insertAddress.setString(3, complement);
 			insertAddress.setString(4, postalCode);
-			return insertAddress.executeUpdate();
+			
+			insertAddress.executeUpdate();
+			
+			ResultSet keysResultSet = insertAddress.getGeneratedKeys();
+			
+			keysResultSet.next();
+			
+			return keysResultSet.getInt(1);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -57,13 +65,13 @@ public class AddressRepository {
 	}
 	
 	public int updateAddress(String street, String number, String complement, 
-			String postalCode, String id) {
+			String postalCode, int id) {
 		try {
 			updateAddress.setString(1, street);
 			updateAddress.setString(2, number);
 			updateAddress.setString(3, complement);
 			updateAddress.setString(4, postalCode);
-			updateAddress.setString(5, id);
+			updateAddress.setInt(5, id);
 			return updateAddress.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -101,6 +109,6 @@ public class AddressRepository {
 			e.printStackTrace();
 		}
 		
-		return null ;
+		return null;
 	}
 }

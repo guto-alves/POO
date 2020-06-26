@@ -1,5 +1,6 @@
 package view;
 
+import controller.LoginController;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.HPos;
@@ -24,16 +25,19 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-import model.Employee;
-import repository.EmployeeRepository;
+import model.EmployeeOn;
 
 public class LoginView {
 	private Dialog<Void> dialog;
-	private EmployeeRepository employeeRepository;
+	private Text title;
+	private Text warningText;
+	private final LoginController controller = new LoginController();
+	
+	private Callback<Boolean, Void> callback;
 
-	public LoginView(Callback<Employee, Void> callback) {
-		employeeRepository = new EmployeeRepository();
-
+	public LoginView(Callback<Boolean, Void> callback) {
+		this.callback = callback;
+		
 		dialog = new Dialog<>();
 		dialog.setTitle("Biblioteca");
 		dialog.getDialogPane().setBackground(new Background(
@@ -51,7 +55,7 @@ public class LoginView {
 		columnConstraints2.setHgrow(Priority.ALWAYS);
 		grid.getColumnConstraints().addAll(columnConstraints1, columnConstraints2);
 
-		Text title = new Text("Bem-Vindo");
+		title = new Text("Bem-Vindo");
 		title.setFont(Font.font("Tahoma", FontWeight.BOLD, 20));
 
 		TextField email = new TextField();
@@ -72,7 +76,7 @@ public class LoginView {
 		loginButton.setDisable(true);
 		GridPane.setHalignment(loginButton, HPos.RIGHT);
 
-		Text warningText = new Text();
+		warningText = new Text();
 		warningText.setFill(Color.FIREBRICK);
 		warningText.setFont(Font.font(14));
 
@@ -96,42 +100,47 @@ public class LoginView {
 		});
 
 		password.textProperty().addListener((observable, oldValue, newValue) -> {
-			loginButton.setDisable(newValue.trim().isBlank() || 
-					email.getText().isBlank());
+			loginButton.setDisable(newValue.trim().isBlank() 
+					|| email.getText().isBlank());
 			warningText.setText("");
+		});
+		
+		password.setOnAction(event -> {
+			login(email.getText(), password.getText());
 		});
 
 		loginButton.setOnAction(event -> {
-			Employee employee = employeeRepository.getEmployee(
-					email.getText(), password.getText());
-
-			if (employee != null) {
-				title.setText("Bem-Vindo, " + employee.getName().split(" ")[0]);
-				warningText.setFill(Color.BLUE);
-				warningText.setText("Carregando ...");
-
-				Task<Void> close = new Task<>() {
-
-					@Override
-					protected Void call() throws Exception {
-						Thread.sleep(2000);
-						return null;
-					}
-				};
-				new Thread(close).start();
-
-				close.setOnSucceeded(value -> {
-					dialog.close();
-					callback.call(employee);
-				});
-			} else {
-				warningText.setText("Email ou senha inválidos.");
-			}
+			login(email.getText(), password.getText());
 		});
 
 		dialog.getDialogPane().setContent(grid);
 
 		Platform.runLater(() -> email.requestFocus());
+	}
+	
+	private void login(String email, String password) {
+		if (controller.login(email, password)) {
+			title.setText("Bem-Vindo, " + EmployeeOn.employee.getName().split(" ")[0]);
+			warningText.setFill(Color.BLUE);
+			warningText.setText("Aguarde ...");
+
+			Task<Void> close = new Task<>() {
+
+				@Override
+				protected Void call() throws Exception {
+					Thread.sleep(2000);
+					return null;
+				}
+			};
+			new Thread(close).start();
+
+			close.setOnSucceeded(value -> {
+				dialog.close();
+				callback.call(true);
+			});
+		} else {
+			warningText.setText("Email ou senha inválidos.");
+		}
 	}
 
 	public void show() {

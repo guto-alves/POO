@@ -62,7 +62,8 @@ public class BookView {
 		gridPane.addRow(4, new Label("Ano"), anoTextField);
 		gridPane.addRow(5, new Label("Editora"), editorasComboBox);
 		gridPane.addRow(6, new Label("Autor(es)"),
-				new VBox(new HBox(16, autoresComboBox, addAutorButton), autoresListView));
+				new VBox(new HBox(16, autoresComboBox, addAutorButton),
+						autoresListView));
 		gridPane.add(new HBox(16, cancelarButton, salvarButton), 1, 7);
 		
 		root.setCenter(new SplitPane(borderPane, gridPane));
